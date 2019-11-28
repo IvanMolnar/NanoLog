@@ -45,16 +45,14 @@ namespace
     /* I want [2016-10-13 00:01:23.528514] */
     void format_timestamp(std::ostream & os, uint64_t timestamp)
     {
-	// The next 3 lines do not work on MSVC!
-	// auto duration = std::chrono::microseconds(timestamp);
-	// std::chrono::high_resolution_clock::time_point time_point(duration);
-	// std::time_t time_t = std::chrono::high_resolution_clock::to_time_t(time_point);
-	std::time_t time_t = timestamp / 1000000;
-	auto gmtime = std::gmtime(&time_t);
+	std::chrono::time_point<std::chrono::system_clock> now = std::chrono::system_clock::now();
+	__time64_t in_time_t = std::chrono::system_clock::to_time_t(now);
+	tm timeBuffer;
+	localtime_s(&timeBuffer, &in_time_t);
 	char buffer[32];
-	strftime(buffer, 32, "%Y-%m-%d %T.", gmtime);
+	strftime(buffer, 32, "%Y-%m-%d %T.", &timeBuffer);
 	char microseconds[7];
-	sprintf(microseconds, "%06llu", timestamp % 1000000);
+	sprintf_s(microseconds, "%06llu", timestamp % 1000000);
 	os << '[' << buffer << microseconds << ']';
     }
 
